@@ -1,0 +1,21 @@
+dist: trusty
+sudo: required
+
+services:
+  - docker
+
+jobs:
+  include:
+    - stage: release
+      if: tag IS present
+      script:
+        - export TAG=`echo $TRAVIS_TAG | sed 's/\./-/g' | sed 's/.*/v&/'`
+        - export IMAGE=$TRAVIS_REPO_SLUG
+        - echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+        - docker build -t $IMAGE:$TRAVIS_TAG .
+        - docker tag $IMAGE:$TRAVIS_TAG $IMAGE:latest
+        - docker push $IMAGE
+        
+notifications:
+  email: false
+  
